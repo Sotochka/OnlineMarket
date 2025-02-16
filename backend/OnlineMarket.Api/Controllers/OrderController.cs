@@ -32,7 +32,7 @@ namespace OnlineShop.Controllers
             return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
         }
 
-        [HttpGet("id/{id:int}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetOrderById([FromRoute] int id)
         {
             var order = await orderService.GetOrderByIdAsync(id);
