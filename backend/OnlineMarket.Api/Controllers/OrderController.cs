@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineMarket.Application.DTOs.OrderDtos;
 using OnlineMarket.Application.Interfaces.Services;
-using OnlineMarket.Domain;
-using OnlineMarket.Domain.Entities;
 
 namespace OnlineShop.Controllers
 {
@@ -16,7 +14,7 @@ namespace OnlineShop.Controllers
         {
             var orders = await orderService.GetOrdersAsync();
 
-            return orders.IsSuccess ? Ok(orders.Value) : NotFound(orders.ErrorMessage);
+            return orders.IsSuccess ? Ok(orders) : BadRequest(orders);
         }
 
         [HttpPost]
@@ -29,7 +27,7 @@ namespace OnlineShop.Controllers
 
             var result = await orderService.CreateOrderAsync(orderDto);
 
-            return result.IsSuccess ? Ok() : BadRequest(result.ErrorMessage);
+            return result.IsSuccess ? Ok() : BadRequest(result);
         }
 
         [HttpGet("{id:int}")]
@@ -37,7 +35,7 @@ namespace OnlineShop.Controllers
         {
             var order = await orderService.GetOrderByIdAsync(id);
 
-            return order.IsSuccess ? Ok(order.Value) : NotFound(order.ErrorMessage);
+            return order.IsSuccess ? Ok(order) : BadRequest(order.ErrorMessage);
         }
     }
 }

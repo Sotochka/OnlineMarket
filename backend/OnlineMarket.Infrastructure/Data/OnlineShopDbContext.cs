@@ -12,11 +12,30 @@ public class OnlineShopDbContext(DbContextOptions<OnlineShopDbContext> options) 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Order>()
             .ToTable("Orders");
 
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.Property(o => o.CustomerFullName)
+                .HasMaxLength(50);
+
+            entity.Property(o => o.CustomerPhone)
+                .HasMaxLength(13);
+        });
+
         modelBuilder.Entity<Product>()
             .ToTable("Products");
+
+        modelBuilder.Entity<Product>(entity =>
+            {
+                entity.Property(p => p.Price)
+                    .HasColumnType("decimal(18,2)");
+
+                entity.Property(p => p.Name)
+                    .HasMaxLength(30);
+            });
 
         modelBuilder.Entity<OrderProduct>()
             .HasKey(op => op.Id);

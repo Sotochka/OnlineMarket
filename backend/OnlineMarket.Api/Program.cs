@@ -1,8 +1,11 @@
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using OnlineMarket.Api.Middlewares;
 using OnlineMarket.Application.Interfaces;
 using OnlineMarket.Application.Interfaces.Services;
 using OnlineMarket.Application.Services;
+using OnlineMarket.Application.Validators;
+using OnlineMarket.Application.Validators.ProductValidator;
 using OnlineMarket.Infrastructure.Data;
 using OnlineMarket.Infrastructure.Persistence;
 using OnlineMarket.Infrastructure.Persistence.Repositories;
@@ -24,7 +27,13 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddFluentValidation(fv =>
+{
+    fv.RegisterValidatorsFromAssemblyContaining<CreateOrderDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<CreateProductDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<UpdateProductDtoValidator>();
+});
+
 
 builder.Services.AddDbContext<OnlineShopDbContext>(options =>
 {

@@ -9,24 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ba6b626-f801-450a-b5ff-f9aada91290e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/eslint.config.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/public/vite.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/src/App.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/src/App.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/src/assets/react.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/src/index.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/src/main.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/src/vite-env.d.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/tsconfig.app.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/tsconfig.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/tsconfig.node.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/online-market/vite.config.ts" beforeDir="false" />
-    </list>
+    <list default="true" id="1ba6b626-f801-450a-b5ff-f9aada91290e" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
