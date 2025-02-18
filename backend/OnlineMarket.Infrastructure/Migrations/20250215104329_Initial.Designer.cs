@@ -11,7 +11,7 @@ using OnlineMarket.Infrastructure.Data;
 
 namespace OnlineMarket.Infrastructure.Migrations
 {
-    [DbContext(typeof(OnlineShopDbContext))]
+    [DbContext(typeof(OnlineMarketDbContext))]
     [Migration("20250215104329_Initial")]
     partial class Initial
     {

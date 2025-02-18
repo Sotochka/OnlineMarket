@@ -42,18 +42,18 @@ public class ProductsController(IProductService productService) : ControllerBase
 
         var result = await productService.CreateProductAsync(product);
 
-        return Ok(result);
+        return result.IsSuccess ? Created() : BadRequest(result);
     }
 
-    [HttpPut]
-    public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto product)
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto product, [FromRoute] int id)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await productService.UpdateProductAsync(product);
+        var result = await productService.UpdateProductAsync(product, id);
 
         return Ok(result);
     }

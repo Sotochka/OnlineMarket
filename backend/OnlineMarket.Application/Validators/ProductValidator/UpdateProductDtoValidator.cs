@@ -7,9 +7,6 @@ public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
 {
     public UpdateProductDtoValidator()
     {
-        RuleFor(product => product.Id)
-            .GreaterThan(0).WithMessage("Product id must be greater than zero.");
-
         RuleFor(product => product.Name)
             .Length(2, 50).WithMessage("Product name must be between 2 and 50 characters.");
 

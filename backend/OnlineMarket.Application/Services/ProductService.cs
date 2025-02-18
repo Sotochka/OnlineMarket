@@ -1,6 +1,7 @@
 ﻿using OnlineMarket.Application.DTOs;
 using OnlineMarket.Application.Interfaces;
 using OnlineMarket.Application.Interfaces.Services;
+using OnlineMarket.Application.Mapper;
 using OnlineMarket.Domain;
 using OnlineMarket.Domain.Entities;
 
@@ -33,20 +34,19 @@ public class ProductService(IProductRepository productRepository) : IProductServ
 
     public async Task<Result> CreateProductAsync(CreateProductDto createProductDto)
     {
-        var product = new Product
-        {
-            Code = createProductDto.Code,
-            Name = createProductDto.Name,
-            Price = createProductDto.Price
-        };
+        var product = createProductDto.ToEntity();
 
         await productRepository.CreateAsync(product);
 
         return Result.Success();
     }
 
-    public async Task<Result> UpdateProductAsync(UpdateProductDto product)
+    public async Task<Result> UpdateProductAsync(UpdateProductDto productDto, int id)
     {
+        var product = productDto.ToEntity();
+
+        product.Id = id;
+
         await productRepository.UpdateAsync(product);
 
         return Result.Success();

@@ -1,6 +1,7 @@
 ﻿using OnlineMarket.Application.DTOs.OrderDtos;
 using OnlineMarket.Application.Interfaces;
 using OnlineMarket.Application.Interfaces.Services;
+using OnlineMarket.Application.Mapper;
 using OnlineMarket.Domain;
 
 namespace OnlineMarket.Application.Services;
@@ -25,7 +26,9 @@ public class OrderService(IOrderRepository orderRepository) : IOrderService
 
     public async Task<Result> CreateOrderAsync(CreateOrderDto orderDto)
     {
-        var result = await orderRepository.CreateAsync(orderDto);
+        var order = orderDto.ToEntity();
+
+        var result = await orderRepository.CreateAsync(order);
 
         return result.IsSuccess ? Result.Success()
             : Result.Failure(result.ErrorMessage);

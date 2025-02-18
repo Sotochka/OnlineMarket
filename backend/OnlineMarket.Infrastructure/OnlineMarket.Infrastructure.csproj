@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="Dapper" Version="2.1.66" />
+      <PackageReference Include="Dapper.SqlBuilder" Version="2.1.66" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
         <PrivateAssets>all</PrivateAssets>
@@ -23,6 +24,30 @@
     <ItemGroup>
       <ProjectReference Include="..\OnlineMarket.Application\OnlineMarket.Application.csproj" />
       <ProjectReference Include="..\OnlineMarket.Domain\OnlineMarket.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="SqlScripts\ProductSqlScripts.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>SqlScripts.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="SqlScripts\OrderSqlScripts.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>OrderSqlScripts.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="SqlScripts\ProductSqlScripts.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>ProductSqlScripts.resx</DependentUpon>
+      </Compile>
+      <Compile Update="SqlScripts\OrderSqlScripts.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>OrderSqlScripts.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

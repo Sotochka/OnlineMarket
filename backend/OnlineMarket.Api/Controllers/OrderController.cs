@@ -27,7 +27,7 @@ namespace OnlineShop.Controllers
 
             var result = await orderService.CreateOrderAsync(orderDto);
 
-            return result.IsSuccess ? Ok() : BadRequest(result);
+            return result.IsSuccess ? Created() : BadRequest(result);
         }
 
         [HttpGet("{id:int}")]

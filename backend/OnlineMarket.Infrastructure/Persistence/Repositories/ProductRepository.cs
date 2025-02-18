@@ -6,15 +6,16 @@ using System.Data;
 using OnlineMarket.Application.DTOs;
 using OnlineMarket.Infrastructure.Data;
 using OnlineMarket.Domain;
+using OnlineMarket.Infrastructure.SqlScripts;
 
 namespace OnlineMarket.Infrastructure.Persistence.Repositories;
 
 public class ProductRepository : IProductRepository
 {
-    private readonly OnlineShopDbContext _context;
+    private readonly OnlineMarketDbContext _context;
     private readonly IDbConnection _connection;
 
-    public ProductRepository(OnlineShopDbContext context)
+    public ProductRepository(OnlineMarketDbContext context)
     {
         _context = context;
         _connection = _context.Database.GetDbConnection();
@@ -22,9 +23,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<Result<IEnumerable<ProductDto>>> GetAllProductsAsync()
     {
-        const string sql = @"
-            SELECT ""Id"", ""Code"", ""Name"", ""Price"" 
-            FROM ""Products""";
+        var sql = ProductSqlScripts.GetAllProducts;
 
         var products = await _connection.QueryAsync<ProductDto>(sql);
 
@@ -35,10 +34,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<Result<ProductDto>> GetByIdAsync(int id)
     {
-        const string sql = @"
-            SELECT ""Id"", ""Code"", ""Name"", ""Price"" 
-            FROM ""Products"" 
-            WHERE ""Id"" = @Id";
+        var sql = ProductSqlScripts.GetProductById;
 
         var product = await _connection.QueryFirstOrDefaultAsync<ProductDto>(sql, new { Id = id });
 
@@ -49,10 +45,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<Result<ProductDto>> GetByCodeAsync(int code)
     {
-        const string sql = @"
-            SELECT ""Id"", ""Code"", ""Name"", ""Price"" 
-            FROM ""Products"" 
-            WHERE ""Code"" = @Code";
+        var sql = ProductSqlScripts.GetProductByCode;
 
         var product = await _connection.QueryFirstOrDefaultAsync<ProductDto>(sql, new { Code = code });
 
@@ -63,9 +56,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<Result> CreateAsync(Product product)
     {
-        const string sql = @"
-            INSERT INTO ""Products"" (""Code"", ""Name"", ""Price"")
-            VALUES (@Code, @Name, @Price)";
+        var sql = ProductSqlScripts.CreateProduct;
 
         await _connection.ExecuteAsync(sql, new
         {
@@ -77,43 +68,39 @@ public class ProductRepository : IProductRepository
         return Result.Success();
     }
 
-    public async Task<Result> UpdateAsync(UpdateProductDto product)
+    public async Task<Result> UpdateAsync(Product product)
     {
-        var setClause = new List<string>();
+        var builder = new SqlBuilder();
         var parameters = new DynamicParameters();
+
         parameters.Add("Id", product.Id);
 
         if (!string.IsNullOrEmpty(product.Code.ToString()))
         {
-            setClause.Add("\"Code\" = @Code");
+            builder.Set("\"Code\" = @Code", new { product.Code });
             parameters.Add("Code", product.Code);
         }
 
         if (!string.IsNullOrEmpty(product.Name))
         {
-            setClause.Add("\"Name\" = @Name");
+            builder.Set("\"Name\" = @Name", new { product.Name });
             parameters.Add("Name", product.Name);
         }
 
-        if (product.Price != 0)
+        if (product.Price > 0)
         {
-            setClause.Add("\"Price\" = @Price");
+            builder.Set("\"Price\" = @Price", new { product.Price });
             parameters.Add("Price", product.Price);
         }
 
-        if (setClause.Count == 0)
-        {
-                throw new ArgumentException("At least one field must be updated.");
-        }
+        var sql = builder.AddTemplate("""
+                                          UPDATE "Products"
+                                          /**set**/
+                                          WHERE "Id" = @Id
+                                      """);
 
-        var sql = $"""
-                               UPDATE "Products" 
-                               SET {string.Join(", ", setClause)}
-                               WHERE "Id" = @Id
-                   """;
+        var affectedRows = await _connection.ExecuteAsync(sql.RawSql, parameters);
 
-        await _connection.ExecuteAsync(sql, parameters);
-
-        return Result.Success();
+        return affectedRows == 0 ? Result.Failure("No product found with the specified ID.") : Result.Success();
     }
 }

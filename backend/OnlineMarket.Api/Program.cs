@@ -35,7 +35,7 @@ builder.Services.AddControllers().AddFluentValidation(fv =>
 });
 
 
-builder.Services.AddDbContext<OnlineShopDbContext>(options =>
+builder.Services.AddDbContext<OnlineMarketDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });

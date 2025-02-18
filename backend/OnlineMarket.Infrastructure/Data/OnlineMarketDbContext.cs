@@ -3,7 +3,7 @@ using OnlineMarket.Domain.Entities;
 
 namespace OnlineMarket.Infrastructure.Data;
 
-public class OnlineShopDbContext(DbContextOptions<OnlineShopDbContext> options) : DbContext(options)
+public class OnlineMarketDbContext(DbContextOptions<OnlineMarketDbContext> options) : DbContext(options)
 {
     public virtual DbSet<Order> Orders { get; set; }
     public virtual DbSet<Product> Products { get; set; }

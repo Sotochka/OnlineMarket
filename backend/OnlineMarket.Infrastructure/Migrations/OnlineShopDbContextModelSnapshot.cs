@@ -10,7 +10,7 @@ using OnlineMarket.Infrastructure.Data;
 
 namespace OnlineMarket.Infrastructure.Migrations
 {
-    [DbContext(typeof(OnlineShopDbContext))]
+    [DbContext(typeof(OnlineMarketDbContext))]
     partial class OnlineShopDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -35,14 +35,13 @@ namespace OnlineMarket.Infrastructure.Migrations
 
                     b.Property<string>("CustomerFullName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("CustomerPhone")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
 
                     b.HasKey("Id");
 
@@ -91,10 +90,11 @@ namespace OnlineMarket.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

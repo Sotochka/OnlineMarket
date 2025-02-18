@@ -3,7 +3,7 @@ using OnlineMarket.Infrastructure.Data;
 
 namespace OnlineMarket.Infrastructure.Persistence;
 
-public class UnitOfWork(OnlineShopDbContext dbContext) : IUnitOfWork
+public class UnitOfWork(OnlineMarketDbContext dbContext) : IUnitOfWork
 {
     public async Task SaveChangesAsync()
     {

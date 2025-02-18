@@ -9,5 +9,5 @@ public interface IProductService
     public Task<Result<ProductDto>> GetProductByIdAsync(int id);
     public Task<Result<ProductDto>> GetProductByCodeAsync(int code);
     public Task<Result> CreateProductAsync(CreateProductDto product);
-    public Task<Result> UpdateProductAsync(UpdateProductDto product);
+    public Task<Result> UpdateProductAsync(UpdateProductDto product, int id);
 }

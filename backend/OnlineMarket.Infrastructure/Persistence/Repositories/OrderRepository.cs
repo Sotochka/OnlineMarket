@@ -7,16 +7,17 @@ using OnlineMarket.Application.DTOs.OrderDtos;
 using OnlineMarket.Application.DTOs.OrderProductDto;
 using OnlineMarket.Infrastructure.Data;
 using OnlineMarket.Domain;
+using OnlineMarket.Infrastructure.SqlScripts;
 
 namespace OnlineMarket.Infrastructure.Persistence.Repositories;
 
 public class OrderRepository : IOrderRepository
 {
-    private readonly OnlineShopDbContext _context;
+    private readonly OnlineMarketDbContext _context;
     private readonly IDbConnection _connection;
     private readonly IUnitOfWork _unitOfWork;
 
-    public OrderRepository(OnlineShopDbContext context, IUnitOfWork unitOfWork)
+    public OrderRepository(OnlineMarketDbContext context, IUnitOfWork unitOfWork)
     {
         _context = context;
         _connection = _context.Database.GetDbConnection();
@@ -25,104 +26,107 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Result<IEnumerable<OrderDto>>> GetAllAsync()
     {
-        const string sql = """
-                               SELECT o."Id", o."UserId", o."CreatedAt", o."CustomerFullName", o."CustomerPhone",
-                                      SUM(op."Amount" * p."Price") OVER (PARTITION BY o."Id") as "TotalPrice",
-                                      op."ProductId", p."Name" as "ProductName", op."Amount" as "ProductAmount"
-                               FROM "Orders" o
-                               LEFT JOIN "OrderProducts" op ON o."Id" = op."OrderId"
-                               LEFT JOIN "Products" p ON op."ProductId" = p."Id"
-                               ORDER BY o."Id"
-                           """;
+        var sql = OrderSqlScripts.GetAllOrders;
 
-        var orders = await _connection.QueryAsync<(int Id, int UserId, DateTime CreatedAt, string CustomerFullName, string CustomerPhone, decimal TotalPrice), (int ProductId, string ProductName, int ProductAmount), OrderDto>(
+        var orderDictionary = new Dictionary<int, OrderDto>();
+
+        var orders = await _connection.QueryAsync<OrderDto, OrderProductDto, OrderDto>(
             sql,
-            (orderData, productData) => new OrderDto(
-                orderData.Id,
-                orderData.UserId,
-                orderData.CreatedAt,
-                orderData.CustomerFullName,
-                orderData.CustomerPhone,
-                orderData.TotalPrice,
-                [new OrderProductDto(productData.ProductId, productData.ProductName, productData.ProductAmount)]
-            ),
+            (order, product) =>
+            {
+                if (!orderDictionary.TryGetValue(order.Id, out var currentOrder))
+                {
+                    currentOrder = new OrderDto(
+                        order.Id,
+                        order.CreatedAt,
+                        order.CustomerFullName,
+                        order.CustomerPhone,
+                        order.TotalPrice,
+                        []
+                    );
+                    orderDictionary[order.Id] = currentOrder;
+                }
+
+                if (product is not null)
+                {
+                    currentOrder.Products.Add(product);
+                }
+
+                return currentOrder;
+            },
             splitOn: "ProductId"
         );
 
-        var result = orders
-            .GroupBy(o => o.Id)
-            .Select(g => g.First() with { Products = g.SelectMany(o => o.Products).ToList() });
+        var result = orderDictionary.Values;
 
-        return result == null ? Result<IEnumerable<OrderDto>>.Failure("No orders found")
+        return result.Count == 0
+            ? Result<IEnumerable<OrderDto>>.Failure("No orders found")
             : Result<IEnumerable<OrderDto>>.Success(result);
+
     }
 
     public async Task<Result<OrderDto>> GetByIdAsync(int id)
     {
-        const string sql = """
-            SELECT o."Id", o."UserId", o."CreatedAt", o."CustomerFullName", o."CustomerPhone",
-                   SUM(op."Amount" * p."Price") OVER (PARTITION BY o."Id") as "TotalPrice",
-                   op."ProductId", p."Name" as "ProductName", op."Amount" as "ProductAmount"
-            FROM "Orders" o
-            LEFT JOIN "OrderProducts" op ON o."Id" = op."OrderId"
-            LEFT JOIN "Products" p ON op."ProductId" = p."Id"
-            WHERE o."Id" = @Id
-            ORDER BY o."Id"
-        """;
+        var sql = OrderSqlScripts.GetOrderById;
 
-        var orders = await _connection.QueryAsync<(int Id, int UserId, DateTime CreatedAt, string CustomerFullName, 
-            string CustomerPhone, decimal TotalPrice), (int ProductId, string ProductName, int ProductAmount), OrderDto>(
+        var orderDictionary = new Dictionary<int, OrderDto>();
+
+        var orders = await _connection.QueryAsync<OrderDto, OrderProductDto, OrderDto>(
             sql,
-            (orderData, productData) => new OrderDto(
-                orderData.Id,
-                orderData.UserId,
-                orderData.CreatedAt,
-                orderData.CustomerFullName,
-                orderData.CustomerPhone,
-                orderData.TotalPrice,
-                [new OrderProductDto(productData.ProductId, productData.ProductName, productData.ProductAmount)]
-            ),
+            (order, product) =>
+            {
+                if (!orderDictionary.TryGetValue(order.Id, out var currentOrder))
+                {
+                    currentOrder = new OrderDto(
+                        order.Id,
+                        order.CreatedAt,
+                        order.CustomerFullName,
+                        order.CustomerPhone,
+                        order.TotalPrice,
+                        []
+                    );
+                    orderDictionary.Add(order.Id, currentOrder);
+                }
+
+                if (product != null)
+                {
+                    currentOrder.Products.Add(product);
+                }
+
+                return currentOrder;
+            },
             new { Id = id },
             splitOn: "ProductId"
         );
 
-        var result = orders
-            .GroupBy(o => o.Id)
-            .Select(g => g.First() with { Products = g.SelectMany(o => o.Products).ToList() })
-            .FirstOrDefault();
+        var result = orderDictionary.Values.FirstOrDefault();
 
-        return result == null ? Result<OrderDto>.Failure("Order not found")
+        return result == null
+            ? Result<OrderDto>.Failure("Order not found")
             : Result<OrderDto>.Success(result);
+
     }
 
-    public async Task<Result> CreateAsync(CreateOrderDto orderDto)
+    public async Task<Result> CreateAsync(Order order)
     {
         await _unitOfWork.BeginTransactionAsync();
         try
         {
-            const string insertOrderSql = @"
-            INSERT INTO ""Orders"" (""UserId"", ""CustomerFullName"", ""CustomerPhone"", ""CreatedAt"")
-            VALUES (@UserId, @CustomerFullName, @CustomerPhone, @CreatedAt)
-            RETURNING ""Id""";
+            var sql = OrderSqlScripts.CreateOrder;
 
-            var orderId = await _connection.QuerySingleAsync<int>(insertOrderSql, new
+            var orderId = await _connection.QuerySingleAsync<int>(sql, new
             {
-                orderDto.UserId,
-                orderDto.CustomerFullName,
-                orderDto.CustomerPhone,
-                CreatedAt = DateTime.Now
+                order.CustomerFullName,
+                order.CustomerPhone,
+                order.CreatedAt
             });
 
-            const string insertOrderProductSql = @"
-            INSERT INTO ""OrderProducts"" (""OrderId"", ""ProductId"", ""Amount"", ""TotalPrice"")
-            VALUES (@OrderId, @ProductId, @Amount, @TotalPrice)";
+            var insertOrderProductSql = OrderSqlScripts.AddProductToOrder;
 
-            foreach (var orderProduct in orderDto.OrderProducts)
+            foreach (var orderProduct in order.OrderProducts)
             {
                 var totalPrice = await _connection.QueryFirstOrDefaultAsync<decimal>(
-                    @"SELECT p.""Price"" * @Amount as TotalPrice 
-                FROM ""Products"" p 
-                WHERE p.""Id"" = @ProductId",
+                    OrderSqlScripts.GetTotalPrice,
                     new { orderProduct.ProductId, orderProduct.Amount }
                 );
 

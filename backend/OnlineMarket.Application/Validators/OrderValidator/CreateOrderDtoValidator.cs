@@ -7,9 +7,6 @@ public class CreateOrderDtoValidator : AbstractValidator<CreateOrderDto>
 {
     public CreateOrderDtoValidator()
     {
-        RuleFor(order => order.UserId)
-            .GreaterThan(0).WithMessage("User id must be greater than zero.");
-
         RuleFor(order => order.CustomerFullName)
             .NotEmpty().WithMessage("Customer name is required.")
             .Length(2, 50).WithMessage("Customer name must be between 2 and 100 characters.");
